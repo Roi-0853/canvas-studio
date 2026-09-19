@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>My Canvas Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f0f0f0;
+      font-family: sans-serif;
+    }
+    #toolbar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    #container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #fcfcfc;
+    /* background-image artık JS tarafında updateGridPattern ile yönetiliyor */
+    }
+  </style>
+  <!-- Konva.js CDN -->
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+</head>
+<body>
+
+  <div id="toolbar">
+    <button id="addRect">Kutu Ekle</button>
+    <button id="saveBtn">Kaydet (.mycanvas)</button>
+    <button id="loadBtn">Dosya Aç (.mycanvas)</button>
+    <input type="file" id="fileInput" accept=".mycanvas" style="display: none;" />
+  </div>
+
+  <div id="container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
