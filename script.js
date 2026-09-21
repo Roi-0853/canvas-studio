@@ -1,5 +1,6 @@
 import { updateGrid } from './grid.js';
 import { saveToFile, loadFromFile } from './filesystem.js';
+import { ConnectionManager, ConnectionTool, getCardId } from './connections.js';
 
 const PADDING = 16;
 const MIN_WIDTH = 120;
@@ -15,6 +16,10 @@ const stage = new Konva.Stage({
 
 const layer = new Konva.Layer();
 stage.add(layer);
+
+// Bağlantı (ok) yöneticisi ve etkileşim aracı.
+const connectionManager = new ConnectionManager(layer);
+const connectionTool = new ConnectionTool(connectionManager, stage, layer);
 
 const tr = new Konva.Transformer({
   anchorFill: '#ffffff',
@@ -57,6 +62,8 @@ function makeTextEditable(group) {
 
     const textarea = document.createElement('textarea');
     document.body.appendChild(textarea);
+    // textarea dışına tıklanınca bağlantı aracı tetiklenmesin.
+    textarea.addEventListener('click', (e) => e.stopPropagation());
 
     textarea.value = textNode.text();
     textarea.style.position = 'absolute';
@@ -114,6 +121,8 @@ function makeTextEditable(group) {
     function setTextareaValue() {
       textNode.text(textarea.value);
       autoFitGroupToText(group);
+      // Metin genişliği değişince kart boyutu değişebilir -> okları tazele.
+      connectionManager.updateConnectionsForCard(getCardId(group));
       removeTextarea();
     }
 
@@ -167,6 +176,14 @@ export function createCard(x, y, width = 160, height = 80, initialText = 'Çift 
   group.add(rect);
   group.add(text);
 
+  // Kart kimliğini hemen ata; bağlantılar bu id üzerinden çalışır.
+  getCardId(group);
+
+  // Kart hareket ettikçe / dönüştürüldükçe bağlantı uçlarını güncelle.
+  group.on('dragmove transform', () => {
+    connectionManager.updateConnectionsForCard(getCardId(group));
+  });
+
   group.on('transformend', () => {
     const scaleX = group.scaleX();
     const scaleY = group.scaleY();
@@ -178,17 +195,27 @@ export function createCard(x, y, width = 160, height = 80, initialText = 'Çift 
 
     group.scaleX(1);
     group.scaleY(1);
-    
+
     autoFitGroupToText(group);
+    connectionManager.updateConnectionsForCard(getCardId(group));
   });
 
   makeTextEditable(group);
+  group.setAttr('cardId', group.getAttr('cardId')); // id'nin serileştirmeye taşınmasını garanti et
   layer.add(group);
   autoFitGroupToText(group);
   layer.draw();
+
+  return group;
 }
 
 stage.on('click tap', (e) => {
+  // Bağlantı modu açıkken tıklamalar bağlantı aracına gider.
+  if (connectionTool.active) {
+    connectionTool.handleStageClick(e.target);
+    return;
+  }
+
   if (e.target === stage) {
     tr.nodes([]);
     layer.draw();
@@ -245,7 +272,29 @@ document.getElementById('addRect').addEventListener('click', () => {
   createCard(centerX - 80, centerY - 40);
 });
 
-document.getElementById('saveBtn').addEventListener('click', () => saveToFile(stage));
+// Bağlanma modunu aç/kapa.
+const connectBtn = document.getElementById('connectBtn');
+if (connectBtn) {
+  connectBtn.addEventListener('click', () => {
+    const active = !connectionTool.active;
+    connectionTool.setActive(active);
+    connectBtn.classList.toggle('active', active);
+    if (active) tr.nodes([]);
+    layer.draw();
+  });
+}
+
+// Bağlantı çizgisine sağ tık -> bağlantıyı sil.
+stage.on('contextmenu', (e) => {
+  e.evt.preventDefault();
+  const arrow = e.target.hasName('connection') ? e.target : null;
+  if (arrow) {
+    const conn = connectionManager.getConnectionByArrow(arrow);
+    if (conn) connectionManager.removeConnectionById(conn.id);
+  }
+});
+
+document.getElementById('saveBtn').addEventListener('click', () => saveToFile(stage, connectionManager));
 
 const fileInput = document.getElementById('fileInput');
 document.getElementById('loadBtn').addEventListener('click', () => fileInput.click());
@@ -253,7 +302,7 @@ document.getElementById('loadBtn').addEventListener('click', () => fileInput.cli
 fileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
-    loadFromFile(file, stage, layer, tr, createCard, () => updateGrid(stage, containerEl));
+    loadFromFile(file, stage, layer, tr, createCard, () => updateGrid(stage, containerEl), connectionManager);
     fileInput.value = '';
   }
 });
@@ -263,5 +312,8 @@ window.addEventListener('resize', () => {
   stage.height(window.innerHeight);
   updateGrid(stage, containerEl);
 });
+
+// Sahne pan/zoom olduğunda oklar kartlarla birlikte taşınır (aynı katmanda),
+// bu yüzden ek işlem gerekmez; yalnızca ızgara güncellenir.
 
 updateGrid(stage, containerEl);

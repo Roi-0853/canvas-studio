@@ -1,10 +1,10 @@
 // filesystem.js
 
-export function saveToFile(stage) {
+export function saveToFile(stage, connectionManager) {
   const shapes = stage.find('.shape');
-  
+
   const exportData = {
-    version: '1.0',
+    version: '1.1',
     stage: {
       scale: stage.scaleX(),
       x: stage.x(),
@@ -14,6 +14,7 @@ export function saveToFile(stage) {
       const rect = group.findOne('Rect');
       const text = group.findOne('Text');
       return {
+        id: group.getAttr('cardId'), // Bağlantılar bu id ile referans verir
         x: group.x(),
         y: group.y(),
         width: rect.width(),
@@ -21,7 +22,9 @@ export function saveToFile(stage) {
         rotation: group.rotation() || 0, // Rotasyonu da kaydediyoruz
         text: text.text()
       };
-    })
+    }),
+    // Bağlantılar (oklar) ayrı bir dizide saklanır.
+    connections: connectionManager ? connectionManager.serialize() : []
   };
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -33,7 +36,7 @@ export function saveToFile(stage) {
   URL.revokeObjectURL(url);
 }
 
-export function loadFromFile(file, stage, layer, tr, createCardFn, updateGridFn) {
+export function loadFromFile(file, stage, layer, tr, createCardFn, updateGridFn, connectionManager) {
   const reader = new FileReader();
 
   reader.onload = (e) => {
@@ -45,7 +48,8 @@ export function loadFromFile(file, stage, layer, tr, createCardFn, updateGridFn)
         tr.nodes([]);
       }
 
-      // Mevcut sahneyi temizle
+      // Mevcut sahneyi temizle (önce bağlantılar, sonra kartlar).
+      if (connectionManager) connectionManager.clearAll();
       const existingShapes = stage.find('.shape');
       existingShapes.forEach(shape => shape.destroy());
 
@@ -56,8 +60,15 @@ export function loadFromFile(file, stage, layer, tr, createCardFn, updateGridFn)
 
       if (Array.isArray(data.items)) {
         data.items.forEach(item => {
-          createCardFn(item.x, item.y, item.width, item.height, item.text, item.rotation || 0);
+          const group = createCardFn(item.x, item.y, item.width, item.height, item.text, item.rotation || 0);
+          // Kaydedilmiş kart id'sini geri yükle; bağlantılar bu id'lere bağlanır.
+          if (group && item.id) group.setAttr('cardId', item.id);
         });
+      }
+
+      // Bağlantıları kartlar oluşturulduktan SONRA yükle.
+      if (connectionManager && Array.isArray(data.connections)) {
+        connectionManager.deserialize(data.connections);
       }
 
       layer.draw();
