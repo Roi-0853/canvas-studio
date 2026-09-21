@@ -1,4 +1,8 @@
-const BASE_STEP = 30;
+// utils/grid.js
+// DEBUG: Canvas arka planındaki SVG nokta ızgarasının dinamik ölçeklenmesi ve güncellenmesi.
+
+import { BASE_STEP } from '../constants.js';
+
 let lastSvgUrl = '';
 
 export function updateGrid(stage, containerEl) {
