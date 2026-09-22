@@ -3,14 +3,14 @@
   <p>Drag-and-drop Canvas. Anytime, anywhere.</p>
 </div>
 
-![Canvas Studio Demo](assets/one.png)
+![Canvas Studio Demo](assets/two.png)
 
 ##Features
 
 - [x] In-place text editing
 - [x] Custom file format
 - [ ] Desktop version
-- [ ] Methods for linking boxes
+- [x] Methods for connecting boxes
 
 ## Installation and Execution
 

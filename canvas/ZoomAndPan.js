@@ -1,5 +1,5 @@
 // canvas/zoomAndPan.js
-// DEBUG: Fare tekerleği ile Zum (Zoom) yapma ve sürüklerken arka plan ızgarasını sync etme.
+// DEBUG: Fare tekerleği ile zoom yapma ve sürüklerken arka plan ızgarasını sync etme.
 
 import { stage, containerEl } from './stage.js';
 import { updateGrid } from '../utils/grid.js';

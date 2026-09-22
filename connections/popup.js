@@ -1,46 +1,97 @@
 // connections/popup.js
-// DEBUG: Çizgi boş alana bırakıldığında açılan Hızlı Kutucuk Ekle butonu.
+// DEBUG: Çizgi boş alana bırakıldığında açılan Hızlı Kutucuk Ekle butonu (Konva grubu).
 
+import { stage, layer } from '../canvas/stage.js';
 import { cleanupTempLine } from './tempLine.js';
+
+let popupGroup = null;
 
 export function showAddCardPopup(screenX, screenY, canvasX, canvasY, sourceGroup, createCardFn, connectionManager) {
   removeAddCardPopup(); // Varsa eskisini kaldır
 
-  const btn = document.createElement('button');
-  btn.id = 'quick-add-btn';
-  btn.innerText = '+ Kutucuk Ekle';
-  btn.style.position = 'absolute';
-  btn.style.left = `${screenX}px`;
-  btn.style.top = `${screenY}px`;
-  btn.style.zIndex = '1000';
-  btn.style.padding = '8px 12px';
-  btn.style.backgroundColor = '#3182ce';
-  btn.style.color = '#ffffff';
-  btn.style.border = 'none';
-  btn.style.borderRadius = '6px';
-  btn.style.cursor = 'pointer';
-  btn.style.boxShadow = '0 4px 10px rgba(0,0,0,0.15)';
-  btn.style.fontWeight = 'bold';
+  const label = '+ Kutucuk Ekle';
+  const fontSize = 14;
+  const paddingX = 12;
+  const paddingY = 8;
+  const fontFamily = 'sans-serif';
 
-  btn.onclick = () => {
+  // Metin boyutunu ölçmek için geçici bir Konva.Text kullan
+  const measure = new Konva.Text({ text: label, fontSize, fontFamily, fontStyle: 'bold' });
+  const width = measure.width() + paddingX * 2;
+  const height = measure.height() + paddingY * 2;
+  measure.destroy();
+
+  // Konum canvas uzayındadır (screen değil); stage pan/zoom'una otomatik uyar
+  const group = new Konva.Group({
+    name: 'quickAddPopup',
+    x: canvasX,
+    y: canvasY,
+  });
+
+  const rect = new Konva.Rect({
+    width,
+    height,
+    fill: '#3182ce',
+    cornerRadius: 6,
+    shadowColor: 'rgba(0,0,0,0.25)',
+    shadowBlur: 10,
+    shadowOffsetY: 4,
+  });
+
+  const text = new Konva.Text({
+    text: label,
+    fontSize,
+    fontFamily,
+    fontStyle: 'bold',
+    fill: '#ffffff',
+    x: paddingX,
+    y: paddingY,
+    listening: false, // Tıklamayı group yakalasın
+  });
+
+  group.add(rect);
+  group.add(text);
+
+  // Tıklama: yeni kartı oluştur ve bağlantıyı tamamla
+  group.on('click tap', (e) => {
+    e.cancelBubble = true; // Stage click (seçim temizleme) tetiklenmesin
     const newCard = createCardFn(canvasX - 70, canvasY - 35);
     connectionManager.createConnection(sourceGroup, newCard);
     cleanupTempLine();
     removeAddCardPopup();
-  };
+  });
 
-  document.body.appendChild(btn);
+  // Fareyi üzerine getirince imleci değiştir
+  group.on('mouseenter', () => {
+    stage.container().style.cursor = 'pointer';
+  });
+  group.on('mouseleave', () => {
+    stage.container().style.cursor = '';
+  });
 
-  // Dışarı tıklandığında iptal et
-  setTimeout(() => {
-    window.addEventListener('click', removeAddCardPopup, { once: true });
-  }, 10);
+  layer.add(group);
+  popupGroup = group;
+  layer.batchDraw();
+
+  // Dışarı tıklandığında iptal et. Sonraki pointerdown ile kaydediyoruz;
+  // böylece popup'ı oluşturan jestin bitmesi beklenir (tıklama yutulması önlenir).
+  requestAnimationFrame(() => {
+    const onPointerDown = (e) => {
+      // Popup üzerinde basıldıysa iptal etme
+      if (e.target && e.target.findAncestor('.quickAddPopup', true)) return;
+      window.removeEventListener('pointerdown', onPointerDown, true);
+      removeAddCardPopup();
+    };
+    window.addEventListener('pointerdown', onPointerDown, true);
+  });
 }
 
 export function removeAddCardPopup() {
-  const existing = document.getElementById('quick-add-btn');
-  if (existing) {
-    existing.remove();
+  if (popupGroup) {
+    popupGroup.destroy();
+    popupGroup = null;
+    stage.container().style.cursor = '';
+    layer.batchDraw();
     cleanupTempLine();
   }
 }

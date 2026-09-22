@@ -8,7 +8,7 @@ import { setupCardPorts } from './ports.js';
 import { autoFitGroupToText, makeTextEditable } from './textEditor.js';
 
 export function createCardFactory(connectionManager) {
-  return function createCard(x, y, width = 160, height = 80, initialText = 'Çift tıkla...') {
+  return function createCard(x, y, width = 160, height = 80, initialText = 'Start Writing!') {
     const group = new Konva.Group({
       x: x,
       y: y,
