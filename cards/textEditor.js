@@ -52,7 +52,7 @@ export function makeTextEditable(group, connectionManager) {
     textarea.style.lineHeight = textNode.lineHeight();
     textarea.style.fontFamily = textNode.fontFamily();
     textarea.style.color = textNode.fill();
-    textarea.style.border = '2px solid #3182ce';
+    textarea.style.border = '2px solid #553353';
     textarea.style.borderRadius = `${8 * stageScale}px`;
     textarea.style.background = '#ffffff';
     textarea.style.outline = 'none';

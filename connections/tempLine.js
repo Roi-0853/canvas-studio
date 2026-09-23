@@ -21,9 +21,9 @@ export function setDragSourceGroup(group) {
 export function createTempLine(startX, startY) {
   tempLine = new Konva.Arrow({
     points: [startX, startY, startX, startY],
-    stroke: '#3182ce',
+    stroke: '#553353',
     strokeWidth: 2,
-    fill: '#3182ce',
+    fill: '#553353',
     pointerLength: 8,
     pointerWidth: 8,
     dash: [4, 4],

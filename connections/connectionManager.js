@@ -45,9 +45,9 @@ export class ConnectionManager {
 
     const arrow = new Konva.Arrow({
       points: getEdgeIntersectionPoints(fromGroup, toGroup),
-      stroke: '#3182ce',
+      stroke: '#553353',
       strokeWidth: 2,
-      fill: '#3182ce',
+      fill: '#553353',
       pointerLength: 8,
       pointerWidth: 8,
       hitStrokeWidth: 10,

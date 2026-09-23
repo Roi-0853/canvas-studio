@@ -20,7 +20,7 @@ export function createCardFactory(connectionManager) {
       width: width,
       height: height,
       fill: '#ffffff',
-      stroke: '#cbd5e1',
+      stroke: '#b5a3b4',
       strokeWidth: 2,
       cornerRadius: 8,
       shadowColor: 'black',

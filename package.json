@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "feather-icons": "^4.29.2",
+    "feather-icons-react": "^1.0.0",
     "konva": "^10.5.0"
   }
 }

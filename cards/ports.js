@@ -20,7 +20,7 @@ export function setupCardPorts(group) {
   portsData.forEach(p => {
     const circle = new Konva.Circle({
       radius: 6,
-      fill: '#3182ce',
+      fill: '#553353',
       stroke: '#ffffff',
       strokeWidth: 2,
       name: `port-${p.name}`,

@@ -31,7 +31,7 @@ export function showAddCardPopup(screenX, screenY, canvasX, canvasY, sourceGroup
   const rect = new Konva.Rect({
     width,
     height,
-    fill: '#3182ce',
+    fill: '#553353',
     cornerRadius: 6,
     shadowColor: 'rgba(0,0,0,0.25)',
     shadowBlur: 10,

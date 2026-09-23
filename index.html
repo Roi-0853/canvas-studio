@@ -6,13 +6,18 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/konva@9/konva.min.js"></script>
 </head>
-<body>
+<body> 
 
   <div id="toolbar">
-    <button id="addRect">Kutu Ekle</button>
-    <button id="connectBtn" title="Bağlan: kaynak karta, sonra hedef karta tıkla">Bağlan</button>
-    <button id="saveBtn">Kaydet (.mycanvas)</button>
-    <button id="loadBtn">Dosya Aç (.mycanvas)</button>
+    <button id="addRect">
+      <img src="./assets/icons/square-rounded-plus-2.svg" class="btn-icon" alt="" onerror="this.style.display='none'" />
+    </button>
+    <button id="saveBtn">
+      <img src="./assets/icons/file-download.svg" class="btn-icon" alt="" onerror="this.style.display='none'" />
+    </button>
+    <button id="loadBtn">
+      <img src="./assets/icons/file-upload.svg" class="btn-icon" alt="" onerror="this.style.display='none'" />
+    </button>
     <input type="file" id="fileInput" accept=".mycanvas" style="display: none;" />
   </div>
 
